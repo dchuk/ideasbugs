@@ -161,6 +161,11 @@ Everything is optional; a fresh install works with zero config. Full list with c
 
 ## Working on the gem itself
 
+The development toolchain is pinned to Ruby 4.0.5 in `mise.toml`. Do not use
+macOS's `/usr/bin/ruby`. In shells, hooks, or automation where mise activation
+is uncertain, explicitly prepend the configured Ruby, for example
+`PATH="$(mise where ruby)/bin:$PATH" bundle exec rake test`.
+
 ```bash
 bundle exec rake test            # minitest, dummy app under test/dummy
 bundle exec rake test:system     # browser tests, separate task
