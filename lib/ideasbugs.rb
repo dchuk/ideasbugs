@@ -3,6 +3,7 @@
 require 'ideasbugs/version'
 require 'ideasbugs/configuration'
 require 'ideasbugs/widget'
+require 'ideasbugs/widget_helper'
 require 'ideasbugs/has_feedback'
 require 'ideasbugs/seeds'
 require 'ideasbugs/engine'

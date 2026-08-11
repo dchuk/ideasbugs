@@ -3,7 +3,10 @@
 module Ideasbugs
   # Included into the host's ActionView. Drop `<%= ideasbugs_tag %>`
   # before </body> in your layout; it renders nothing unless feedback is
-  # enabled for the request.
+  # enabled for the request. This lives under lib and is required before the
+  # engine registers its Action View load hook: a host initializer may load
+  # Action View before Rails sets up application autoloaders, when an
+  # app/helpers constant cannot be resolved yet.
   module WidgetHelper
     def ideasbugs_tag
       return unless Ideasbugs.enabled?(request)

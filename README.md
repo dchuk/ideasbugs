@@ -61,7 +61,7 @@ duplicating them.
 > The dashboard defaults to **development only**. Set `authorize_admin` before
 > you deploy — see [Configure](#configure).
 
-Ruby >= 3.2 · Rails >= 7.1 · Active Storage only if you want screenshots ·
+Ruby >= 3.2 · Rails >= 7.1 and < 9 · Active Storage only if you want screenshots ·
 CSRF token comes from `csrf_meta_tags`, already in a standard Rails layout.
 
 Installing with a coding agent? Point it at [AGENTS.md](AGENTS.md) — the same
@@ -269,6 +269,26 @@ nothing changes until you set `config.tenant`.
 
 </details>
 
+## Compatibility and public API
+
+The following are the model and integration contracts that 1.x will keep
+stable under semantic versioning:
+
+- `Ideasbugs::Feedback`, including `kind`, `section`, `message`, `status`,
+  `page_url`, `user_agent`, `tenant`, `author_id`, `author_label`, timestamps,
+  `STATUSES`, status helpers/scopes, `newest_first`, `for_tenant`, and gated
+  `screenshots`.
+- `has_feedback` and the host-model collection it defines.
+- `Ideasbugs.configure` and the documented configuration options.
+- `mount_ideasbugs`, `ideasbugs_tag`, and `data-ideasbugs-open`.
+- `config.on_submit`, called with the saved `Ideasbugs::Feedback`.
+
+`Feedback` is intentional domain language and will not be renamed to a generic
+`Post` during 1.x. Engine controllers, partials, CSS classes, generated HTML,
+and widget implementation objects are private. Incompatible changes to the
+public list above wait for a new major version; a deprecation normally ships
+first.
+
 ## Localization
 
 Every string resolves through Rails I18n under `ideasbugs.*` and follows the
@@ -305,6 +325,10 @@ to `kind.humanize`.
 
 ## Security
 
+See [SECURITY.md](https://github.com/yshmarov/ideasbugs/blob/main/SECURITY.md)
+for supported versions, private vulnerability reporting, the complete
+stored-data boundary, and deletion/retention guidance.
+
 - **Both gates run server-side**, on every request. The dashboard denies
   everything outside development until you configure `authorize_admin`.
 - **Screenshots stream through the dashboard's own gate** — never public Active
@@ -320,6 +344,10 @@ to `kind.humanize`.
   survives Turbo visits.
 - **No foreign key into your user table.** Attribution is loose fields, so the
   gem never couples to your user model.
+- **The host owns retention and deletion.** Feedback can contain personal data,
+  and screenshots can contain anything visible on the user's screen. Delete a
+  row with `Ideasbugs::Feedback.find(id).destroy!`, then apply your object-store,
+  backup, cache, and export retention policies separately.
 
 ## Development
 
@@ -332,7 +360,8 @@ bundle exec rubocop
 
 Tests run against a dummy Rails app in `test/dummy`; the widget is covered by
 Capybara system tests in a real browser. CI runs Rails 7.1 / 7.2 / 8.0 / 8.1
-against Ruby 3.2–3.4 (per-version Gemfiles in `gemfiles/`).
+against Ruby 3.2–4.0 (per-version Gemfiles in `gemfiles/`). Rails 9 is outside
+the 1.x dependency contract until it passes the suite.
 
 ## One family
 

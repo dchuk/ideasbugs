@@ -1,5 +1,36 @@
 # Changelog
 
+## [Unreleased]
+
+## [1.0.0] - 2026-08-11
+
+- **The documented integration surface is now the stable 1.x contract.**
+  `Ideasbugs.configure`, every generated configuration option,
+  `mount_ideasbugs`, `ideasbugs_tag`, `data-ideasbugs-open`,
+  `Ideasbugs::Feedback`'s documented fields/status helpers/scopes, tenant
+  helpers, gated screenshots, and `on_submit` will follow semantic versioning.
+  `Feedback` is intentional domain language and will not be renamed to `Post`.
+  Engine controllers, partials, CSS classes and widget internals remain private.
+- **The three documented status scopes now exist.** `Feedback.open`,
+  `.in_review`, and `.resolved` return ordinary relations and compose with
+  `for_tenant`/`newest_first`. They remain hand-written scopes rather than an
+  enum because `open` would collide with `Kernel#open` in enum machinery.
+- **Hosts that load Action View from an initializer boot normally.**
+  `WidgetHelper` is required from `lib` before the engine registers its Action
+  View hook. A dummy-host initializer reproduces that early load on every test
+  boot. The helper constant and `ideasbugs_tag` API are unchanged.
+- Supported combinations are Ruby 3.2 through 4.0 and Rails 7.1 through 8.1.
+  Rails now has a `< 9` upper bound: future Rails majors must pass the suite
+  before Bundler treats them as supported.
+- Added a security policy and explicit privacy, retention, and deletion guidance
+  for feedback, host-provided attribution, page context, and screenshots.
+  Upgrading from 0.10.1 requires no migration or initializer change.
+- Release validation now runs the normal and browser suites, RuboCop, the widget
+  syntax check and gem build on Ruby 4.0; it verifies RubyGems indexing and
+  creates the GitHub Release. Generator tests now write only under ignored root
+  `tmp/`, so running tests before lint no longer leaves generated files in
+  RuboCop's input tree.
+
 ## 0.10.1
 
 - **The demo inbox now teaches the Ideasbugs workflow.** Its open, in-review,

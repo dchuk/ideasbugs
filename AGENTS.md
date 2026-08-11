@@ -5,7 +5,7 @@ Instructions for coding agents. Two audiences:
 - **[Installing ideasbugs into a Rails app](#installing-into-a-rails-app)** — you are working in a host app and were asked to add product feedback, bug reports, or a feature-request board.
 - **[Working on the gem itself](#working-on-the-gem-itself)** — you are working in this repository.
 
-Requirements: Ruby >= 3.2, Rails >= 7.1. Active Storage only for screenshots. The widget needs the CSRF token from `csrf_meta_tags`, which a standard Rails layout already has.
+Requirements: Ruby >= 3.2, Rails >= 7.1 and < 9. Active Storage only for screenshots. The widget needs the CSRF token from `csrf_meta_tags`, which a standard Rails layout already has.
 
 If you are in a host app and this file is not in front of you, it ships inside the gem: `cat "$(bundle show ideasbugs)/AGENTS.md"`.
 

@@ -40,6 +40,21 @@ module Ideasbugs
       assert_not feedback.valid?
     end
 
+    test 'exposes one relation scope per documented status' do
+      records = Feedback::STATUSES.to_h do |status|
+        [status, Feedback.create!(kind: 'other', message: status, status:)]
+      end
+
+      Feedback::STATUSES.each do |status|
+        assert_equal [records.fetch(status)], Feedback.public_send(status).to_a
+      end
+
+      tenant_open = Feedback.create!(kind: 'bug', message: 'Tenant open', tenant: 'acme')
+      Feedback.create!(kind: 'bug', message: 'Other tenant open', tenant: 'other')
+
+      assert_equal [tenant_open], Feedback.for_tenant('acme').open.newest_first.to_a
+    end
+
     test 'attaches screenshots' do
       feedback = Feedback.create!(kind: 'bug', message: 'See attached')
       feedback.screenshots.attach(

@@ -29,6 +29,7 @@ module Ideasbugs
     scope :newest_first, -> { order(id: :desc) }
 
     STATUSES.each do |status|
+      scope status, -> { where(status:) }
       define_method(:"#{status}?") { self.status == status }
     end
 

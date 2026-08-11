@@ -172,7 +172,7 @@ end
 #    resolved value, and no index may duplicate a leftmost prefix of another.
 class BackboneGeneratorTest < Rails::Generators::TestCase
   tests Ideasbugs::Generators::InstallGenerator
-  destination File.expand_path('../tmp/backbone', __dir__)
+  destination File.expand_path('../../tmp/backbone', __dir__)
   setup :prepare_destination
   setup :write_routes
 

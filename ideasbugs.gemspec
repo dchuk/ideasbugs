@@ -33,11 +33,12 @@ Gem::Specification.new do |spec|
     'Rakefile',
     'README.md',
     'CHANGELOG.md',
+    'SECURITY.md',
     # Ships so an agent working in a host app can read the install guide
     # straight out of the bundle: `cat "$(bundle show ideasbugs)/AGENTS.md"`.
     'AGENTS.md'
   ]
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'rails', '>= 7.1'
+  spec.add_dependency 'rails', '>= 7.1', '< 9'
 end
