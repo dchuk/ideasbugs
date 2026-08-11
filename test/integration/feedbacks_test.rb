@@ -29,6 +29,28 @@ class FeedbacksTest < ActionDispatch::IntegrationTest
     assert_equal 'open', feedback.status
   end
 
+  test 'stores only a safe query-free source page' do
+    post '/feedback/feedbacks', params: {
+      feedback: {
+        kind: 'bug', message: 'It broke',
+        page_url: 'https://example.com/billing?token=secret#details'
+      }
+    }
+
+    assert_response :created
+    assert_equal 'https://example.com/billing', Ideasbugs::Feedback.last.page_url
+
+    post '/feedback/feedbacks', params: {
+      feedback: {
+        kind: 'bug', message: 'Still broken',
+        page_url: 'javascript:alert(1)'
+      }
+    }
+
+    assert_response :created
+    assert_nil Ideasbugs::Feedback.last.page_url
+  end
+
   test 'attributes the author via the configured hooks' do
     user = Struct.new(:id, :email).new(42, 'user@example.com')
     Ideasbugs.config.current_user = ->(_request) { user }

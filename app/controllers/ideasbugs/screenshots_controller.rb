@@ -7,14 +7,15 @@ module Ideasbugs
   # be reachable without passing the same gate as the dashboard — regardless of
   # how the host app configures (or doesn't configure) blob access.
   class ScreenshotsController < DashboardController
+    include ActiveStorage::Streaming if defined?(::ActiveStorage::Streaming)
+
     def show
       screenshot = Feedback.for_tenant(current_tenant)
                            .find(params[:feedback_id]).screenshots.find(params[:id])
 
-      send_data screenshot.download,
-                filename: screenshot.filename.to_s,
-                type: screenshot.content_type,
-                disposition: 'inline'
+      response.headers['X-Content-Type-Options'] = 'nosniff'
+      response.headers['Cache-Control'] = 'private, no-store'
+      send_blob_stream screenshot.blob, disposition: 'inline'
     end
 
     private

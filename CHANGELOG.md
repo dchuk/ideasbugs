@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-08-11
+
+- **Screenshot responses now stream privately through the gated engine route.**
+  Responses are marked `private, no-store` and `nosniff`, so sensitive screen
+  captures are not buffered or left cacheable by the browser.
+- **Stored page context is now privacy-filtered.** Only bounded HTTP(S) URLs
+  without credentials, query strings, or fragments are retained.
+
 ## [1.0.0] - 2026-08-11
 
 - **The documented integration surface is now the stable 1.x contract.**

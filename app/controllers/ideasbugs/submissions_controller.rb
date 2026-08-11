@@ -23,6 +23,7 @@ module Ideasbugs
 
     def create
       feedback = Feedback.new(feedback_params)
+      feedback.page_url = clean_page_url(feedback.page_url)
       feedback.user_agent = request.user_agent
       feedback.tenant = current_tenant
       attribute_author(feedback)

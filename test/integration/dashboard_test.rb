@@ -218,6 +218,9 @@ class DashboardTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_equal 'image/png', response.media_type
     assert_includes response.headers['Content-Disposition'], 'inline'
+    assert_includes response.headers['Cache-Control'], 'private'
+    assert_includes response.headers['Cache-Control'], 'no-store'
+    assert_equal 'nosniff', response.headers['X-Content-Type-Options']
     assert_equal feedback.screenshots.first.byte_size, response.body.bytesize
   end
 
