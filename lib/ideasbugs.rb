@@ -37,6 +37,10 @@ module Ideasbugs
       config.base_controller_class.to_s.constantize
     end
 
+    def board_controller
+      config.board_controller_class.to_s.constantize
+    end
+
     def admin?(request)
       !!config.authorize_admin.call(request)
     end

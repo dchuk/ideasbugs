@@ -7,10 +7,10 @@ module Ideasbugs
         seed_id: 'checkout-error',
         kind: 'bug',
         section: '1. Try triage',
-        message: 'Start here: this open bug shows what the widget captures — kind, section, page URL, ' \
-                 'browser context, and an author when you configure one. Move it to In review as your ' \
+        message: 'Start here: this open bug shows what the widget captures — kind, page URL, ' \
+                 'browser context, and an author when you configure one. Move it to Planned as your ' \
                  'first triage action.',
-        status: 'open',
+        status: 'under_review',
         page_url: '/checkout?demo=ideasbugs',
         author_label: 'Demo customer · open this first'
       },
@@ -18,10 +18,10 @@ module Ideasbugs
         seed_id: 'saved-filters',
         kind: 'feature',
         section: '2. Shape the inbox',
-        message: 'This feature request is already In review so you can compare workflow states. Set ' \
-                 'config.sections to your product areas, adjust config.kinds if needed, then use the board ' \
+        message: 'This feature request is already Planned so you can compare workflow states. Set ' \
+                 'config.current_user and a safe public author_label, adjust config.kinds, then use the board ' \
                  'filters and search to keep recurring themes visible.',
-        status: 'in_review',
+        status: 'planned',
         page_url: '/reports?demo=ideasbugs',
         author_label: 'Demo product manager · compare states'
       },
@@ -29,10 +29,10 @@ module Ideasbugs
         seed_id: 'export-confusing',
         kind: 'other',
         section: '3. Ship safely',
-        message: 'This resolved item is your launch checklist: render ideasbugs_tag, set authorize_admin ' \
-                 'before production, and configure current_user plus author_label when you want attributed ' \
+        message: 'This completed item is your launch checklist: render ideasbugs_tag, set authorize_admin ' \
+                 'before production, and configure current_user plus a safe public author_label for ' \
                  'feedback. Screenshots remain behind the dashboard gate.',
-        status: 'resolved',
+        status: 'complete',
         page_url: '/settings?demo=ideasbugs',
         author_label: 'Demo admin · launch checklist'
       }

@@ -3,6 +3,7 @@
 require 'test_helper'
 
 class WidgetSystemTest < ApplicationSystemTestCase
+  setup { Ideasbugs.config.current_user = ->(_request) { Struct.new(:id).new('test-member') } }
   test 'submits feedback end to end, with a screenshot' do
     visit '/sample'
 
@@ -29,17 +30,16 @@ class WidgetSystemTest < ApplicationSystemTestCase
     assert_equal 1, feedback.screenshots.count
   end
 
-  test 'shows the section select when sections are configured' do
-    Ideasbugs.config.sections = %w[Billing Reports]
+  test 'submissions no longer offer legacy sections' do
     visit '/sample'
 
     find('#idb-button').click
-    select 'Billing', from: 'Section'
+    assert_no_selector 'select[name=section]'
     fill_in 'Your message', with: 'Billing is confusing'
     click_button 'Send feedback'
 
     assert_text 'Thanks for your feedback!'
-    assert_equal 'Billing', Ideasbugs::Feedback.last.section
+    assert_nil Ideasbugs::Feedback.last.section
   end
 
   test 'closes on Escape without submitting' do

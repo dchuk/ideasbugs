@@ -6,6 +6,7 @@ gemspec
 
 group :development, :test do
   gem 'capybara'
+  gem 'pg'
   gem 'puma'
   # Pinned: RuboCop ships new and changed cops in minor releases, and no
   # Gemfile.lock is committed here (a gem resolves against a range — that is

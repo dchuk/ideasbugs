@@ -33,7 +33,8 @@ Ideasbugs.configure do |config|
   # end
 
   # Label stored for the author and shown in the dashboard.
-  # config.author_label = ->(user) { user.try(:email) }
+  # Labels are PUBLIC on listed requests, votes and comments. Never use email.
+  # config.author_label = ->(user) { user.try(:display_name).presence || 'Member' }
 
   # Multi-tenancy (optional). Give each customer/tenant its own board — its own
   # widget submissions and its own triage dashboard. Return an opaque key
@@ -53,7 +54,7 @@ Ideasbugs.configure do |config|
   # config.kinds = %w[bug feature other]
 
   # App areas shown as a select in the widget. Empty list hides the select.
-  # config.sections = ["Dashboard", "Billing", "Settings"]
+  # Sections were removed in v2. Existing section data remains admin-only.
 
   # Screenshot uploads (requires Active Storage).
   # config.screenshots = true
@@ -83,3 +84,12 @@ Ideasbugs.configure do |config|
   # Called with each saved feedback — notify Slack, send an email, etc.
   # config.on_submit = ->(feedback) { FeedbackMailer.with(feedback:).new_feedback.deliver_later }
 end
+
+# Additional v2 options (set inside Ideasbugs.configure above):
+# config.use_public_ids = true # 12-character opaque Board/Feedback URLs
+# config.board_controller_class = 'FeedbackBaseController' # customer shell, never an admin controller
+# config.board_layout = 'feedback' # default: self-contained engine layout
+# config.on_status_change = ->(feedback, previous_status) { }
+# config.on_comment = ->(comment) { }
+# These hooks run after commit; exceptions are logged. Delivery/retry belongs to the host.
+# All writes now require config.current_user to resolve an object with a nonblank id.

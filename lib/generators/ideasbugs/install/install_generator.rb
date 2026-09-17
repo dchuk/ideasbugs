@@ -23,6 +23,10 @@ module Ideasbugs
                            'db/migrate/create_ideasbugs_feedbacks.rb'
       end
 
+      def create_boards_migration
+        invoke 'ideasbugs:upgrade'
+      end
+
       def mount_engine
         route %(mount_ideasbugs at: "/feedback")
       end

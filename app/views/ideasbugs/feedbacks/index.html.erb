@@ -1,3 +1,8 @@
+<nav><%= link_to 'Awaiting moderation', root_path(visibility: 'unlisted') %> · <%= link_to 'All feedback', root_path %> · <%= link_to 'Manage boards', admin_boards_path %> · <%= link_to 'Customer boards', boards_path %></nav>
+<%= form_with url: root_path, method: :get do |f| %>
+<%= f.label :board_id, 'Board' %><%= f.collection_select :board_id, @boards, :id, :name, { include_blank: 'All boards', selected: params[:board_id] } %>
+<%= f.label :visibility, 'Moderation' %><%= f.select :visibility, [['All', 'all'], ['Awaiting moderation', 'unlisted'], ['Listed', 'listed'], ['Merged', 'merged']], selected: @visibility %>
+<%= f.hidden_field :status, value: @status %><%= f.submit 'Filter' %><% end %>
 <% content_for :body_class, 'ib-index' %>
 
 <%= render layout: 'ideasbugs/shared/dashboard' do %>
@@ -37,7 +42,7 @@
         <% if @feedbacks.any? %>
           <% @feedbacks.each do |feedback| %>
             <%= link_to feedbacks_path(status: @status, kind: @kind, q: @query, page: @page,
-                                       feedback_id: feedback.id),
+                                       feedback_id: feedback.to_param),
                         class: ['record-row', ('active' if @selected_feedback&.id == feedback.id)].compact do %>
               <span class="record-main">
                 <span class="record-topline">
@@ -53,7 +58,7 @@
                 </span>
                 <span class="record-copy"><%= truncate(feedback.message, length: 120) %></span>
                 <span class="muted record-meta">
-                  <span>#<%= feedback.id %></span>
+                  <span>#<%= feedback.to_param %></span>
                   <% if @show_section && feedback.section.present? %>
                     <span class="feedback-section"><%= feedback.section %></span>
                   <% end %>

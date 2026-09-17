@@ -1,0 +1,78 @@
+# frozen_string_literal: true
+
+require 'digest'
+require 'securerandom'
+
+class UpgradeIdeasbugsToV2 < ActiveRecord::Migration<%= migration_version %>
+  def up
+    raise 'Ideasbugs v2 is already installed' if table_exists?(:ideasbugs_boards)
+
+    statuses = select_values('SELECT DISTINCT status FROM ideasbugs_feedbacks')
+    raise "Unknown Ideasbugs statuses: #{statuses.inspect}" unless (statuses - %w[open in_review resolved]).empty?
+
+    key_type = connection.columns(:ideasbugs_feedbacks).find { |column| column.name == 'id' }.type
+    key_type = :bigint if key_type == :integer
+    create_table :ideasbugs_boards, id: key_type do |t|
+      t.string :public_id, null: false
+      t.index :public_id, unique: true
+      t.string :name, null: false
+      t.string :visibility, null: false, default: 'private'
+      t.string :tenant
+      t.string :default_key
+      t.timestamps
+      t.index :default_key, unique: true
+      t.index :tenant
+    end
+    add_column :ideasbugs_feedbacks, :tenant, :string unless column_exists?(:ideasbugs_feedbacks, :tenant)
+    add_column :ideasbugs_feedbacks, :public_id, :string
+    add_index :ideasbugs_feedbacks, :public_id, unique: true
+    add_reference :ideasbugs_feedbacks, :board, type: key_type, foreign_key: { to_table: :ideasbugs_boards }
+    add_reference :ideasbugs_feedbacks, :merged_into, type: key_type, foreign_key: { to_table: :ideasbugs_feedbacks }
+    add_column :ideasbugs_feedbacks, :visibility, :string, null: false, default: 'unlisted'
+    add_column :ideasbugs_feedbacks, :votes_count, :integer, null: false, default: 0
+    add_column :ideasbugs_feedbacks, :comments_count, :integer, null: false, default: 0
+    add_index :ideasbugs_feedbacks, %i[board_id visibility status], name: 'index_ideasbugs_board_listing'
+    add_check_constraint :ideasbugs_feedbacks, 'votes_count >= 0 AND comments_count >= 0', name: 'ideasbugs_nonnegative_counts'
+
+    tenants = select_values('SELECT DISTINCT tenant FROM ideasbugs_feedbacks')
+    tenants = [nil] if tenants.empty?
+    tenants.each do |tenant|
+      key = Digest::SHA256.hexdigest(tenant.nil? ? 'nil' : "tenant:#{tenant}")
+      timestamp = connection.quote(Time.current)
+      execute "INSERT INTO ideasbugs_boards (public_id, name, visibility, tenant, default_key, created_at, updated_at) " \
+              "VALUES (#{connection.quote(SecureRandom.alphanumeric(12))}, 'Feedback', 'private', #{connection.quote(tenant)}, #{connection.quote(key)}, #{timestamp}, #{timestamp})"
+      board_id = select_value("SELECT id FROM ideasbugs_boards WHERE default_key = #{connection.quote(key)}")
+      condition = tenant.nil? ? 'tenant IS NULL' : "tenant = #{connection.quote(tenant)}"
+      execute "UPDATE ideasbugs_feedbacks SET board_id = #{connection.quote(board_id)} WHERE #{condition}"
+    end
+    execute "UPDATE ideasbugs_feedbacks SET status = CASE WHEN status = 'resolved' THEN 'complete' ELSE 'under_review' END"
+    change_column_default :ideasbugs_feedbacks, :status, from: 'open', to: 'under_review'
+    change_column_null :ideasbugs_feedbacks, :board_id, false
+    select_values('SELECT id FROM ideasbugs_feedbacks').each do |id|
+      execute "UPDATE ideasbugs_feedbacks SET public_id = #{connection.quote(SecureRandom.alphanumeric(12))} WHERE id = #{connection.quote(id)}"
+    end
+    change_column_null :ideasbugs_feedbacks, :public_id, false
+
+    create_table :ideasbugs_votes, id: key_type do |t|
+      t.references :feedback, type: key_type, null: false, foreign_key: { to_table: :ideasbugs_feedbacks }
+      t.string :voter_id, null: false
+      t.string :voter_label, null: false
+      t.timestamps
+      t.index %i[feedback_id voter_id], unique: true
+      t.index :created_at
+    end
+    create_table :ideasbugs_comments, id: key_type do |t|
+      t.references :feedback, type: key_type, null: false, foreign_key: { to_table: :ideasbugs_feedbacks }
+      t.references :parent, type: key_type, foreign_key: { to_table: :ideasbugs_comments }
+      t.string :author_id, null: false
+      t.string :author_label, null: false
+      t.text :body, null: false
+      t.boolean :admin, null: false, default: false
+      t.timestamps
+    end
+  end
+
+  def down
+    raise ActiveRecord::IrreversibleMigration, 'Restore the pre-upgrade backup; v2 statuses and discussions cannot map losslessly to v1.'
+  end
+end

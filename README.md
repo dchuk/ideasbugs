@@ -1,5 +1,8 @@
 # ideasbugs
 
+> **2.0 prerelease:** Read [V2_UPGRADE.md](V2_UPGRADE.md) before installing or upgrading. All writes now require a configured current user; public labels default to `Member`; sections have been removed. Customer boards live at `/feedback/boards`; `/feedback` remains the administrator surface. The installer now writes two ordered migrations.
+
+
 [![Gem Version](https://img.shields.io/gem/v/ideasbugs)](https://rubygems.org/gems/ideasbugs)
 [![Downloads](https://img.shields.io/gem/dt/ideasbugs)](https://rubygems.org/gems/ideasbugs)
 [![CI](https://github.com/yshmarov/ideasbugs/actions/workflows/ci.yml/badge.svg)](https://github.com/yshmarov/ideasbugs/actions/workflows/ci.yml)
@@ -96,7 +99,7 @@ the things it should not do. It ships inside the gem, so
 
 ## Configure
 
-Everything is optional — a fresh install works with zero config. In
+Configure current_user before collecting submissions; configure authorize_admin before deploying. In
 `config/initializers/ideasbugs.rb`:
 
 | Option                | Default                     | What it does                                        |
@@ -106,10 +109,10 @@ Everything is optional — a fresh install works with zero config. In
 | `admin_layout`        | the gem's own               | Just the shell, if you don't want the whole controller |
 | `enabled`             | everyone                    | Who can send feedback. `false` hides the widget and rejects posts |
 | `current_user`        | `nil`                       | Attribute a submission to a user. Receives the request |
-| `author_label`        | the user's `email`          | Short label stored and shown in the dashboard        |
+| `author_label`        | `Member`          | Short label stored and shown in the dashboard        |
 | `tenant`              | `nil`                       | One board per tenant — see [Multi-tenancy](#multi-tenancy) |
 | `kinds`               | `%w[bug feature other]`     | Feedback types. Labels via `ideasbugs.kinds.<kind>`  |
-| `sections`            | `[]`                        | App areas shown as a select. Empty hides it          |
+
 | `screenshots`         | `true`                      | Allow uploads (needs Active Storage)                 |
 | `max_screenshots`     | `3`                         | Enforced server-side                                 |
 | `max_screenshot_size` | `5.megabytes`               | Enforced server-side                                 |
@@ -215,13 +218,12 @@ rejected.
 Submissions are ordinary records:
 
 ```ruby
-Ideasbugs::Feedback.where(status: "open").newest_first.each do |feedback|
+Ideasbugs::Feedback.where(status: "under_review").newest_first.each do |feedback|
   puts "[#{feedback.kind}] #{feedback.message} — #{feedback.author_label}"
 end
 ```
 
-Each row stores `kind`, `section`, `message`, `status` (`open` / `in_review` /
-`resolved`), `page_url`, `user_agent`, an optional `tenant`, and optional
+Each row stores `kind`, `section`, `message`, `status` (`under_review` / `planned` / `in_progress` / `in_beta` / `complete` / `not_planned`), `page_url`, `user_agent`, an optional `tenant`, and optional
 `author_id` / `author_label`. Screenshots are Active Storage attachments
 (`feedback.screenshots`).
 
@@ -254,7 +256,7 @@ class Customer < ApplicationRecord
   has_feedback              # keyed by to_gid.to_s (match config.tenant)
 end
 
-customer.feedback.open      # a normal Active Record relation
+customer.feedback.under_review      # a normal Active Record relation
 ```
 
 Apps that skip the concern still get full multi-tenancy from the resolver

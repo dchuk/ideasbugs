@@ -1,0 +1,21 @@
+<%= render 'ideasbugs/shared/dashboard' %>
+<p><%= link_to @board.name, board_path(@board) %></p>
+<h1>Feature request</h1>
+<div class="card"><%= simple_format h(@item.message) %><p><%= @item.status.humanize %> · <%= pluralize(@item.votes_count, 'vote') %></p></div>
+<% if @item.visibility == 'merged' %>
+  <p>This request was merged and is read-only. <% if @canonical %><%= link_to 'Open the combined request', board_item_path(@canonical.board, @canonical) %><% end %></p>
+<% elsif @current_author %>
+  <% voted = @item.votes.exists?(voter_id: @current_author.id.to_s) %>
+  <%= button_to(voted ? 'Remove my vote' : 'Vote for this', board_item_vote_path(@board, @item), method: voted ? :delete : :post) %>
+<% else %><p>Sign in to vote or comment.</p><% end %>
+<details><summary>Voters (<%= @item.votes_count %>)</summary><ul><% @voters.each do |vote| %><li><%= vote.voter_label %></li><% end %></ul><% if @voter_page > 1 %><%= link_to 'Previous voters', board_item_path(@board, @item, voter_page: @voter_page - 1) %><% end %><% if @more_voters %><%= link_to 'More voters', board_item_path(@board, @item, voter_page: @voter_page + 1) %><% end %></details>
+<% if @sources.any? %><h2>Merged requests</h2><ul><% @sources.each do |source| %><li><%= link_to truncate(source.message, length: 100), board_item_path(source.board, source) %></li><% end %></ul><% end %>
+<h2>Discussion</h2>
+<% @comments.each do |comment| %>
+  <article class="card"><strong><%= comment.author_label %></strong><% if comment.admin %> · Administrator<% end %><%= simple_format h(comment.body) %>
+  <% comment.replies.sort_by(&:created_at).each do |reply| %><blockquote><strong><%= reply.author_label %></strong><% if reply.admin %> · Administrator<% end %><%= simple_format h(reply.body) %></blockquote><% end %>
+  <% if @current_author && @item.visibility == 'listed' %><details><summary>Reply</summary><%= render 'comment_form', parent: comment %></details><% end %></article>
+<% end %>
+<% if @comment_page > 1 %><%= link_to 'Previous comments', board_item_path(@board, @item, page: @comment_page - 1) %><% end %>
+<% if @more_comments %><%= link_to 'More comments', board_item_path(@board, @item, page: @comment_page + 1) %><% end %>
+<% if @current_author && @item.visibility == 'listed' %><%= render 'comment_form', parent: nil %><% end %>

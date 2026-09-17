@@ -60,10 +60,6 @@ module Ideasbugs
     # (`ideasbugs.kinds.<kind>`), so you can rename or add kinds freely.
     attr_accessor :kinds
 
-    # Optional list of app areas ("Billing", "Dashboard", …) shown as a select
-    # in the widget. Leave empty to hide the select entirely.
-    attr_accessor :sections
-
     # Allow screenshot uploads. Requires Active Storage in the host app; the
     # widget hides the upload control when this is false or Active Storage is
     # not set up.
@@ -97,18 +93,21 @@ module Ideasbugs
 
     # Called with each saved feedback — notify Slack, send an email, open a
     # ticket. Runs inline after save; keep it fast or hand off to a job.
-    attr_accessor :on_submit
+    attr_accessor :board_controller_class, :board_layout
+    attr_accessor :use_public_ids, :on_submit, :on_status_change, :on_comment
 
     def initialize
+      @board_controller_class = 'ActionController::Base'
+      @board_layout = DEFAULT_ADMIN_LAYOUT
+      @use_public_ids = false
       @enabled = ->(_request) { true }
       @authorize_admin = ->(_request) { Rails.env.development? }
       @admin_layout = DEFAULT_ADMIN_LAYOUT
       @base_controller_class = 'ActionController::Base'
       @current_user = ->(_request) {}
       @tenant = ->(_request) {}
-      @author_label = ->(user) { user.respond_to?(:email) ? user.email : user&.to_s }
+      @author_label = ->(_user) { 'Member' }
       @kinds = %w[bug feature other]
-      @sections = []
       @screenshots = true
       @max_screenshots = 3
       @max_screenshot_size = 5 * 1024 * 1024
@@ -118,6 +117,8 @@ module Ideasbugs
       @button_label = nil
       @mount_path = '/feedback'
       @on_submit = ->(_feedback) {}
+      @on_status_change = ->(_feedback, _previous_status) {}
+      @on_comment = ->(_comment) {}
     end
 
     def feedbacks_endpoint

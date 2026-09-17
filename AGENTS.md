@@ -1,5 +1,8 @@
 # AGENTS.md
 
+> **2.0 prerelease:** Read [V2_UPGRADE.md](V2_UPGRADE.md) before installing or upgrading. All writes now require a configured current user; public labels default to `Member`; sections have been removed. Customer boards live at `/feedback/boards`; `/feedback` remains the administrator surface. The installer now writes two ordered migrations.
+
+
 Instructions for coding agents. Two audiences:
 
 - **[Installing ideasbugs into a Rails app](#installing-into-a-rails-app)** — you are working in a host app and were asked to add product feedback, bug reports, or a feature-request board.
@@ -48,7 +51,7 @@ config.authorize_admin = ->(request) { request.env["warden"]&.user&.admin? }
 
 ```ruby
 config.current_user = ->(request) { request.env["warden"]&.user }
-config.author_label = ->(user) { user.email }   # the short label stored + shown
+config.author_label = ->(user) { user.display_name.presence || "Member" }   # the short label stored + shown
 ```
 
 > **`enabled`, `authorize_admin`, `current_user` and `tenant` receive the raw `request`, not a controller.** Writing `->(request) { current_user }` is the most common mistake here — that method does not exist in this scope. Resolve the user *from the request*: Warden env, a signed cookie, `Current.user` if middleware already set it. `author_label` is the exception: it receives whatever `current_user` returned.
@@ -75,7 +78,7 @@ Then in the running app: load any page, confirm the Feedback button appears, sen
 
 ```ruby
 config.kinds = %w[bug feature other]          # labels resolve through I18n (ideasbugs.kinds.<kind>)
-config.sections = ["Billing", "Dashboard"]     # [] hides the select entirely
+
 config.show_button = false                     # then open it from your own UI
 config.button_label = "Report a problem"       # nil = localized default
 ```
@@ -88,7 +91,7 @@ With `show_button = false`, any element carrying `data-ideasbugs-open` opens the
 
 ### Statuses
 
-`open → in_review → resolved`, as plain strings in `Ideasbugs::Feedback::STATUSES` with a scope per status (`Feedback.open`, `.in_review`, `.resolved`) plus `newest_first`. Deliberately not an Active Record enum — `open` as an enum scope would collide with `Kernel#open`. Do not "modernize" it into an enum.
+`under_review → planned → in_progress → in_beta → complete` (or `not_planned`), as plain strings in `Ideasbugs::Feedback::STATUSES` with a scope per status (`Feedback.open`, `.in_review`, `.resolved`) plus `newest_first`. Deliberately not an Active Record enum — `open` as an enum scope would collide with `Kernel#open`. Do not "modernize" it into an enum.
 
 ### Multi-tenancy
 
@@ -104,7 +107,7 @@ Optional sugar on a host model (`has_feedback` is available on every Active Reco
 class Customer < ApplicationRecord
   has_feedback   # keyed by to_gid.to_s — must match config.tenant
 end
-customer.feedback.open
+customer.feedback.under_review
 ```
 
 `bin/rails generate ideasbugs:tenant` exists **only** to add the `tenant` column to installs made before it existed. A fresh install already has it, and running that generator will fail on a duplicate column. Do not run it as part of a new install.
@@ -126,10 +129,10 @@ Everything is optional; a fresh install works with zero config. Full list with c
 | `authorize_admin` | development only | **Who can read the dashboard. Set before deploying.** |
 | `enabled` | everyone | Per-request gate for the widget and submissions |
 | `current_user` | `nil` | Receives the request |
-| `author_label` | email, else `to_s` | Receives the user |
+| `author_label` | `Member` | Public-safe label; receives the user |
 | `tenant` | `nil` | One board per tenant — see [Multi-tenancy](#multi-tenancy) |
 | `kinds` | `bug feature other` | Labels via `ideasbugs.kinds.<kind>` |
-| `sections` | `[]` | App areas as a select; empty hides it |
+
 | `screenshots` | `true` | Needs Active Storage; inert without it |
 | `max_screenshots`, `max_screenshot_size` | `3`, `5.megabytes` | Enforced server-side |
 | `storage_service` | app default | A `storage.yml` key for a dedicated bucket |

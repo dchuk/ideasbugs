@@ -1,0 +1,6 @@
+<%= render 'ideasbugs/shared/dashboard' %>
+<h1>Feedback boards</h1>
+<% @boards.each do |board| %>
+  <p><%= link_to board.name, board_path(board) %></p>
+<% end %>
+<% if @boards.empty? %><p>No boards are available. Sign in to access private boards.</p><% end %>

@@ -8,12 +8,13 @@ module Ideasbugs
   # Action View before Rails sets up application autoloaders, when an
   # app/helpers constant cannot be resolved yet.
   module WidgetHelper
-    def ideasbugs_tag
+    def ideasbugs_tag(board: nil)
       return unless Ideasbugs.enabled?(request)
 
       Widget.snippet(
         endpoint: Ideasbugs.config.feedbacks_endpoint,
         locale: I18n.locale,
+        board_id: board&.to_param,
         nonce: (content_security_policy_nonce if respond_to?(:content_security_policy_nonce))
       ).html_safe
     end

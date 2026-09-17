@@ -1,0 +1,9 @@
+<%= render 'ideasbugs/shared/dashboard' %>
+<h1>Manage feedback boards</h1><p><%= link_to 'Moderation', root_path %> · <%= link_to 'Customer boards', boards_path %></p>
+<% @boards.each do |board| %><section class="card pad">
+<%= form_with url: admin_board_path(board), scope: :board, method: :patch do |f| %>
+<%= f.label :name, 'Board name', for: "board_name_#{board.id}" %><%= f.text_field :name, value: board.name, id: "board_name_#{board.id}", required: true %>
+<%= f.label :visibility, 'Access', for: "board_visibility_#{board.id}" %><%= f.select :visibility, [['Signed-in users', 'private'], ['Public readers', 'public']], { selected: board.visibility }, id: "board_visibility_#{board.id}" %><%= f.submit 'Save board' %>
+<% end %>
+<% if board.default_key.blank? && !board.feedbacks.exists? %><%= button_to 'Delete empty board', admin_board_path(board), method: :delete %><% end %></section><% end %>
+<h2>Create a board</h2><%= form_with url: admin_boards_path, scope: :board do |f| %><%= f.label :name, 'Board name' %><%= f.text_field :name, required: true %><%= f.label :visibility, 'Access' %><%= f.select :visibility, [['Signed-in users', 'private'], ['Public readers', 'public']] %><%= f.submit 'Create board' %><% end %>

@@ -1,0 +1,16 @@
+<%= render 'ideasbugs/shared/dashboard' %>
+<header class="page-head"><h1><%= @board.name %></h1><button type="button" data-ideasbugs-open>Suggest a feature or report a bug</button></header>
+<nav aria-label="Feedback boards"><% @boards.each do |board| %><%= link_to board.name, board_path(board), aria: { current: board == @board ? 'page' : nil } %> <% end %></nav>
+<%= form_with url: board_path(@board), method: :get, class: 'filters' do |f| %>
+  <%= f.label :q, 'Search requests' %><%= f.search_field :q, value: @query %>
+  <%= f.label :kind, 'Type' %><%= f.select :kind, Ideasbugs.config.kinds.map { |kind| [kind.humanize, kind] }, selected: @kind, include_blank: 'All types' %>
+  <%= f.label :sort, 'Sort' %><%= f.select :sort, [['Trending · last 7 days', 'trending'], ['Top · all votes', 'top'], ['New', 'new']], selected: @sort %>
+  <%= f.submit 'Apply' %>
+<% end %>
+<% @items.each do |item| %>
+  <article class="card"><h2><%= link_to truncate(item.message, length: 180), board_item_path(@board, item) %></h2><p><%= item.status.humanize %> · <%= item.kind.humanize %> · <%= pluralize(item.votes_count, 'vote') %> · <%= pluralize(item.comments_count, 'comment') %></p></article>
+<% end %>
+<% if @items.empty? %><p>No requests match. New submissions appear after moderation.</p><% end %>
+<% if @page > 1 %><%= link_to 'Previous', board_path(@board, q: @query, kind: @kind, sort: @sort, page: @page - 1) %><% end %>
+<% if @more %><%= link_to 'Next', board_path(@board, q: @query, kind: @kind, sort: @sort, page: @page + 1) %><% end %>
+<%= ideasbugs_tag(board: @board) %>

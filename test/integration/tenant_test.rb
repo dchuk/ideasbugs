@@ -8,6 +8,7 @@ module Ideasbugs
   # param so a single test can act as different tenants; a real app would
   # resolve from the session, subdomain, or Current.
   class TenantTest < ActionDispatch::IntegrationTest
+    setup { Ideasbugs.config.current_user = ->(_request) { Struct.new(:id).new('test-member') } }
     setup do
       Ideasbugs.config.tenant = ->(request) { request.params[:tenant].presence }
     end
@@ -16,7 +17,7 @@ module Ideasbugs
       Ideasbugs.config.authorize_admin = ->(_request) { true }
     end
 
-    def feedback!(message:, tenant:, status: 'open')
+    def feedback!(message:, tenant:, status: 'under_review')
       Feedback.create!(kind: 'bug', message: message, status: status, tenant: tenant)
     end
 
@@ -54,9 +55,9 @@ module Ideasbugs
       get "/feedback/feedbacks/#{other.id}", params: { tenant: 'acme' }
       assert_response :not_found
 
-      patch "/feedback/feedbacks/#{other.id}", params: { tenant: 'acme', feedback: { status: 'resolved' } }
+      patch "/feedback/feedbacks/#{other.id}", params: { tenant: 'acme', feedback: { status: 'complete' } }
       assert_response :not_found
-      assert_equal 'open', other.reload.status
+      assert_equal 'under_review', other.reload.status
 
       delete "/feedback/feedbacks/#{other.id}", params: { tenant: 'acme' }
       assert_response :not_found

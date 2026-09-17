@@ -19,6 +19,9 @@ jobs:
       matrix:
         ruby: ["3.2", "3.3", "3.4", "4.0"]
         rails: ["7.1", "7.2", "8.0", "8.1"]
+        exclude:
+          - { ruby: "3.2", rails: "8.0" }
+          - { ruby: "3.2", rails: "8.1" }
     env:
       BUNDLE_GEMFILE: gemfiles/rails_${{ matrix.rails }}.gemfile
     steps:
@@ -58,3 +61,25 @@ jobs:
         run: bundle exec rubocop
       - name: Check widget syntax
         run: node --check lib/ideasbugs/widget.js
+
+  postgresql:
+    name: PostgreSQL migrations and concurrency
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ideasbugs_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/ideasbugs_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+          bundler-cache: true
+      - run: bundle exec rake test:postgresql

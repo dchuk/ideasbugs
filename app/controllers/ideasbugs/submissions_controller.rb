@@ -9,6 +9,7 @@ module Ideasbugs
   # inherit it.
   class SubmissionsController < ApplicationController
     before_action :require_enabled
+    before_action :require_author
 
     # Throttle the public endpoint per IP so one user or bot can't flood the
     # table (each submission may carry megabytes of screenshots). Uses the
@@ -26,13 +27,18 @@ module Ideasbugs
       feedback.page_url = clean_page_url(feedback.page_url)
       feedback.user_agent = request.user_agent
       feedback.tenant = current_tenant
+      board_id = params.dig(:feedback, :board_id)
+      feedback.board = if board_id.present?
+                         find_by_identifier(Board.for_tenant(current_tenant), board_id)
+                       else
+                         Board.default_for(current_tenant)
+                       end
       attribute_author(feedback)
 
       error = attach_screenshots(feedback)
       return render json: { errors: [error] }, status: :unprocessable_entity if error
 
       if feedback.save
-        notify_host(feedback)
         head :created
       else
         render json: { errors: feedback.errors.full_messages }, status: :unprocessable_entity
@@ -41,17 +47,8 @@ module Ideasbugs
 
     private
 
-    # The host's hook must never turn a saved submission into a 500 — the
-    # feedback is in the database; notification failures are the host's logs'
-    # problem.
-    def notify_host(feedback)
-      Ideasbugs.config.on_submit.call(feedback)
-    rescue StandardError => e
-      Rails.logger.error("ideasbugs: on_submit hook raised #{e.class}: #{e.message}")
-    end
-
     def feedback_params
-      params.require(:feedback).permit(:kind, :section, :message, :page_url)
+      params.require(:feedback).permit(:kind, :message, :page_url)
     end
 
     def attribute_author(feedback)
@@ -70,7 +67,9 @@ module Ideasbugs
       return t_error(:error_save) unless Ideasbugs.config.screenshots_enabled?
       return t_error(:error_too_many, count: Ideasbugs.config.max_screenshots) if too_many?(files)
       return t_error(:error_too_large, size: max_size_mb) if files.any? { |f| f.size > max_size }
-      return t_error(:error_save) unless files.all? { |f| f.content_type.to_s.start_with?('image/') }
+      return t_error(:error_save) unless files.all? do |f|
+        %w[image/png image/jpeg image/webp image/gif].include?(f.content_type.to_s)
+      end
 
       feedback.screenshots.attach(files)
       nil

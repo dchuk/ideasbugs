@@ -10,12 +10,13 @@ module Ideasbugs
     include ActiveStorage::Streaming if defined?(::ActiveStorage::Streaming)
 
     def show
-      screenshot = Feedback.for_tenant(current_tenant)
-                           .find(params[:feedback_id]).screenshots.find(params[:id])
+      screenshot = find_by_identifier(tenant_scope, params[:feedback_id]).screenshots.find(params[:id])
 
       response.headers['X-Content-Type-Options'] = 'nosniff'
       response.headers['Cache-Control'] = 'private, no-store'
-      send_blob_stream screenshot.blob, disposition: 'inline'
+      safe_raster = %w[image/png image/jpeg image/webp image/gif].include?(screenshot.blob.content_type)
+      response.headers['Content-Security-Policy'] = "sandbox; default-src 'none'"
+      send_blob_stream screenshot.blob, disposition: safe_raster ? 'inline' : 'attachment'
     end
 
     private

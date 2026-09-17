@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [2.0.0.pre] - 2026-09-16
+
+- Adds private/public feedback boards, moderated listings, six lifecycle statuses, customer discovery, votes, one-level comments, administrator controls and duplicate merging. Participation and merge use row locks and database uniqueness; source discussions stay readable.
+- **Upgrade required:** new tables and feedback backfill; fresh installs now generate two migrations. See [V2_UPGRADE.md](V2_UPGRADE.md). Legacy statuses map to under_review/complete and all existing reports remain unlisted. Rollback requires a backup or compatible code.
+- **Authentication is required for every write.** Hosts must configure current_user. Public identity labels now default to Member; review custom labels before exposing them. Screenshot/source metadata stays administrator-only.
+- Removes config.sections and the widget section selector; historical section data is retained. Adds optional opaque Board/Feedback URLs and separate customer-controller/layout hooks.
+- Adds after-commit submission/status/comment hooks without a notification engine. Adds PostgreSQL UUID/concurrency checks alongside SQLite and browser tests.
+- Screenshot uploads now allow raster formats only; legacy SVG/non-raster files download as attachments with a sandbox policy.
+- This is a prerelease: cross-version CI, expanded race/browser coverage and real-host production integration remain release gates.
+
+
 ## [1.0.1] - 2026-08-11
 
 - **Screenshot responses now stream privately through the gated engine route.**

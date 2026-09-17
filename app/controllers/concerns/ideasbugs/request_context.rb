@@ -32,6 +32,18 @@ module Ideasbugs
       @current_tenant = Ideasbugs.tenant(request)
     end
 
+    def find_by_identifier(scope, identifier)
+      Ideasbugs.config.use_public_ids ? scope.find_by!(public_id: identifier) : scope.find(identifier)
+    end
+
+    def require_author
+      head :unauthorized unless current_author.respond_to?(:id) && current_author.id.present?
+    end
+
+    def public_author_label
+      Ideasbugs.config.author_label.call(current_author).to_s.presence || 'Member'
+    end
+
     def require_enabled
       head :forbidden unless Ideasbugs.enabled?(request)
     end

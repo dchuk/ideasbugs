@@ -8,6 +8,10 @@ require 'rack/test'
 
 ActiveRecord::Schema.verbose = false
 ActiveRecord::Schema.define do
+  drop_table :ideasbugs_comments, if_exists: true
+  drop_table :ideasbugs_votes, if_exists: true
+  drop_table :ideasbugs_feedbacks, if_exists: true
+  drop_table :ideasbugs_boards, if_exists: true
   create_table :ideasbugs_feedbacks, force: true do |t|
     t.string :kind, null: false, default: 'other'
     t.string :section
@@ -55,6 +59,14 @@ ActiveRecord::Schema.define do
             unique: true, name: 'index_active_storage_variant_records_uniqueness'
   end
 end
+
+require 'erb'
+migration_version = "[#{ActiveRecord::VERSION::MAJOR}.#{ActiveRecord::VERSION::MINOR}]"
+upgrade_template = File.expand_path(
+  '../lib/generators/ideasbugs/upgrade/templates/upgrade_ideasbugs_to_v2.rb.tt', __dir__
+)
+eval ERB.new(File.read(upgrade_template)).result(binding) # rubocop:disable Security/Eval
+UpgradeIdeasbugsToV2.migrate(:up)
 
 module ActiveSupport
   class TestCase

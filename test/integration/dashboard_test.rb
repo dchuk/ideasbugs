@@ -32,10 +32,10 @@ class DashboardTest < ActionDispatch::IntegrationTest
   test 'forbids updates by default' do
     feedback = create_feedback
 
-    patch "/feedback/feedbacks/#{feedback.id}", params: { feedback: { status: 'resolved' } }
+    patch "/feedback/feedbacks/#{feedback.id}", params: { feedback: { status: 'complete' } }
 
     assert_response :forbidden
-    assert_equal 'open', feedback.reload.status
+    assert_equal 'under_review', feedback.reload.status
   end
 
   test 'forbids screenshots by default' do
@@ -51,7 +51,7 @@ class DashboardTest < ActionDispatch::IntegrationTest
   test 'lists open feedback' do
     authorize_admin!
     feedback = create_feedback(message: 'Open bug')
-    create_feedback(message: 'Solved one', status: 'resolved')
+    create_feedback(message: 'Solved one', status: 'complete')
 
     get '/feedback'
 
@@ -122,10 +122,10 @@ class DashboardTest < ActionDispatch::IntegrationTest
 
   test 'filters by status and kind' do
     authorize_admin!
-    create_feedback(message: 'A bug in review', status: 'in_review')
-    create_feedback(message: 'A feature idea', kind: 'feature', status: 'in_review')
+    create_feedback(message: 'A bug in review', status: 'planned')
+    create_feedback(message: 'A feature idea', kind: 'feature', status: 'planned')
 
-    get '/feedback', params: { status: 'in_review', kind: 'feature' }
+    get '/feedback', params: { status: 'planned', kind: 'feature' }
 
     assert_includes response.body, 'A feature idea'
     assert_not_includes response.body, 'A bug in review'
@@ -142,7 +142,6 @@ class DashboardTest < ActionDispatch::IntegrationTest
 
   test 'does not show blank section metadata when sections are configured' do
     authorize_admin!
-    Ideasbugs.config.sections = %w[Billing Reports]
     create_feedback(message: 'No section, but configured')
 
     get '/feedback'
@@ -177,9 +176,9 @@ class DashboardTest < ActionDispatch::IntegrationTest
     # Status moved from a row of buttons under the message to the switch in the
     # heading: the status it is in is lit and inert, the other two submit.
     assert_includes response.body, 'status-switch'
-    assert_includes response.body, 'class="status-open current"'
-    assert_select 'form.status-switch button[name="feedback[status]"][value=?]', 'resolved'
-    assert_select 'form.status-switch button[name="feedback[status]"][value=?]', 'in_review'
+    assert_includes response.body, 'class="status-under_review current"'
+    assert_select 'form.status-switch button[name="feedback[status]"][value=?]', 'complete'
+    assert_select 'form.status-switch button[name="feedback[status]"][value=?]', 'planned'
     # The heading badge said the status the switch now shows.
     assert_select '.panel-head .badge.status-open', false
   end
@@ -238,10 +237,10 @@ class DashboardTest < ActionDispatch::IntegrationTest
     authorize_admin!
     feedback = create_feedback
 
-    patch "/feedback/feedbacks/#{feedback.id}", params: { feedback: { status: 'resolved' } }
+    patch "/feedback/feedbacks/#{feedback.id}", params: { feedback: { status: 'complete' } }
 
     assert_response :see_other
-    assert_equal 'resolved', feedback.reload.status
+    assert_equal 'complete', feedback.reload.status
   end
 
   test 'deletes feedback' do

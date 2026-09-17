@@ -1,0 +1,6 @@
+<%= form_with url: board_item_comments_path(@board, @item), scope: :comment do |f| %>
+  <%= f.hidden_field :parent_id, value: parent.id if parent %>
+  <%= f.label :body, parent ? 'Your reply' : 'Your comment', for: "comment_body_#{parent&.id}" %>
+  <%= f.text_area :body, id: "comment_body_#{parent&.id}", required: true, maxlength: 10_000, rows: 3 %>
+  <%= f.submit parent ? 'Post reply' : 'Post comment' %>
+<% end %>

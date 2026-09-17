@@ -15,8 +15,6 @@ class WidgetTest < ActiveSupport::TestCase
   end
 
   test 'ships the endpoint, kinds, sections, and limits as JSON data' do
-    Ideasbugs.config.sections = %w[Dashboard Billing]
-
     html = Ideasbugs::Widget.snippet(endpoint: '/feedback/feedbacks', locale: :en)
     config = parsed_config(html)
 
@@ -26,7 +24,7 @@ class WidgetTest < ActiveSupport::TestCase
       { 'value' => 'feature', 'label' => 'Feature request' },
       { 'value' => 'other', 'label' => 'Other' }
     ], config['kinds']
-    assert_equal %w[Dashboard Billing], config['sections']
+    assert_not config.key?('sections')
     assert_equal({ 'enabled' => true, 'max' => 3, 'maxSize' => 5 * 1024 * 1024 }, config['screenshots'])
     assert_equal false, config['rtl']
   end

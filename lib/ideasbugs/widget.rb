@@ -52,12 +52,12 @@ module Ideasbugs
       # nonce gets refused; a same-origin src is covered by `'self'` on every
       # visit. `nonce:` is still stamped for hosts whose script-src has no
       # 'self'; pass nil when the app has no nonce.
-      def snippet(endpoint:, locale:, nonce: nil)
+      def snippet(endpoint:, locale:, nonce: nil, board_id: nil)
         config = {
           endpoint: endpoint,
+          boardId: board_id,
           locale: locale.to_s,
           kinds: kinds,
-          sections: Ideasbugs.config.sections.map(&:to_s),
           screenshots: screenshots,
           showButton: Ideasbugs.config.show_button ? true : false,
           buttonLabel: Ideasbugs.config.button_label,

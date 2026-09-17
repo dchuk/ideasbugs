@@ -28,12 +28,12 @@ module Ideasbugs
     test 'defaults to open and validates status' do
       feedback = Feedback.create!(kind: 'bug', message: 'It broke')
 
-      assert_predicate feedback, :open?
+      assert_predicate feedback, :under_review?
 
-      feedback.status = 'in_review'
+      feedback.status = 'planned'
 
       assert_predicate feedback, :valid?
-      assert_predicate feedback, :in_review?
+      assert_predicate feedback, :planned?
 
       feedback.status = 'wontfix'
 
@@ -52,7 +52,7 @@ module Ideasbugs
       tenant_open = Feedback.create!(kind: 'bug', message: 'Tenant open', tenant: 'acme')
       Feedback.create!(kind: 'bug', message: 'Other tenant open', tenant: 'other')
 
-      assert_equal [tenant_open], Feedback.for_tenant('acme').open.newest_first.to_a
+      assert_equal [tenant_open], Feedback.for_tenant('acme').under_review.newest_first.to_a
     end
 
     test 'attaches screenshots' do

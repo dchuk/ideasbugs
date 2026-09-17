@@ -3,6 +3,7 @@
 require 'test_helper'
 
 class FeedbacksTest < ActionDispatch::IntegrationTest
+  setup { Ideasbugs.config.current_user = ->(_request) { Struct.new(:id).new('test-member') } }
   def png
     Rack::Test::UploadedFile.new(file_fixture('tiny.png'), 'image/png')
   end
@@ -22,11 +23,11 @@ class FeedbacksTest < ActionDispatch::IntegrationTest
     feedback = Ideasbugs::Feedback.last
 
     assert_equal 'bug', feedback.kind
-    assert_equal 'Billing', feedback.section
+    assert_nil feedback.section
     assert_equal 'It broke', feedback.message
     assert_equal 'http://example.com/billing', feedback.page_url
     assert_equal 'TestBrowser/1.0', feedback.user_agent
-    assert_equal 'open', feedback.status
+    assert_equal 'under_review', feedback.status
   end
 
   test 'stores only a safe query-free source page' do
@@ -60,7 +61,7 @@ class FeedbacksTest < ActionDispatch::IntegrationTest
     feedback = Ideasbugs::Feedback.last
 
     assert_equal '42', feedback.author_id
-    assert_equal 'user@example.com', feedback.author_label
+    assert_equal 'Member', feedback.author_label
   end
 
   test 'calls the on_submit hook' do

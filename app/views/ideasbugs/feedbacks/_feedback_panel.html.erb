@@ -4,7 +4,7 @@
       <span class="badge kind-<%= feedback.kind.to_s.parameterize %>">
         <%= t("ideasbugs.kinds.#{feedback.kind}", default: feedback.kind.humanize) %>
       </span>
-      <span class="case-id">#<%= feedback.id %></span>
+      <span class="case-id">#<%= feedback.to_param %></span>
     </h1>
 
     <%# The shared status switch, carrying the status the heading badge used to
@@ -65,6 +65,18 @@
 
     <%# Status lives in the switch in the heading; only what a switch cannot say
         is left here. %>
+    <section class="card pad">
+      <h2>Moderation</h2><p><%= feedback.board.name %> · <%= feedback.visibility.humanize %></p>
+      <% unless feedback.visibility == 'merged' %>
+        <%= button_to(feedback.visibility == 'listed' ? 'Unlist request' : 'List request', feedback_path(feedback), method: :patch, params: { feedback: { visibility: feedback.visibility == 'listed' ? 'unlisted' : 'listed' } }) %>
+      <% end %>
+      <% if feedback.visibility == 'listed' %>
+        <p><%= link_to 'Open customer discussion', board_item_path(feedback.board, feedback) %></p>
+        <%= form_with url: merge_feedback_path(feedback), method: :post do |f| %><%= f.label :target_id, 'Merge into request ID' %><%= f.text_field :target_id, required: true %><%= f.submit 'Merge duplicate' %><% end %>
+      <% end %>
+      <h3>Voters (<%= feedback.votes_count %>)</h3><ul><% feedback.votes.order(:id).limit(100).each do |vote| %><li><%= vote.voter_label %></li><% end %></ul>
+      <h3>Comments</h3><% feedback.comments.order(:id).limit(100).each do |comment| %><article><strong><%= comment.author_label %></strong><%= simple_format h(comment.body) %><%= button_to 'Delete comment and replies', feedback_comment_path(feedback, comment_id: comment.id), method: :delete %></article><% end %>
+    </section>
     <div class="actions">
       <%= button_to t('ideasbugs.dashboard.delete', default: 'Delete'),
                     feedback_path(feedback),
