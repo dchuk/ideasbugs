@@ -1,5 +1,5 @@
 <%= render 'ideasbugs/shared/dashboard' %>
-<header class="page-head"><h1><%= @board.name %></h1><button type="button" data-ideasbugs-open>Suggest a feature or report a bug</button></header>
+<header class="page-head"><h1><%= @board.name %></h1><% if @current_author %><button type="button" data-ideasbugs-open>Suggest a feature or report a bug</button><% else %><p>Sign in to suggest a feature or report a bug.</p><% end %></header>
 <nav aria-label="Feedback boards"><% @boards.each do |board| %><%= link_to board.name, board_path(board), aria: { current: board == @board ? 'page' : nil } %> <% end %></nav>
 <%= form_with url: board_path(@board), method: :get, class: 'filters' do |f| %>
   <%= f.label :q, 'Search requests' %><%= f.search_field :q, value: @query %>
@@ -13,4 +13,4 @@
 <% if @items.empty? %><p>No requests match. New submissions appear after moderation.</p><% end %>
 <% if @page > 1 %><%= link_to 'Previous', board_path(@board, q: @query, kind: @kind, sort: @sort, page: @page - 1) %><% end %>
 <% if @more %><%= link_to 'Next', board_path(@board, q: @query, kind: @kind, sort: @sort, page: @page + 1) %><% end %>
-<%= ideasbugs_tag(board: @board) %>
+<%= ideasbugs_tag(board: @board) if @current_author %>

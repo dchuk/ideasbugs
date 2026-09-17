@@ -46,11 +46,15 @@ module Ideasbugs
         @feedback.update!(attributes)
       end
       redirect_back fallback_location: feedback_path(@feedback), status: :see_other
+    rescue ActiveRecord::RecordInvalid => e
+      render plain: e.message, status: :unprocessable_entity
     end
 
     def destroy
       @feedback.with_lock { @feedback.destroy! }
       redirect_to root_path, status: :see_other
+    rescue ActiveRecord::RecordNotDestroyed => e
+      render plain: e.message, status: :unprocessable_entity
     end
 
     def merge

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.0.0.pre.1] - 2026-09-16
+
+- Submission receipts now explain moderation privacy, and signed-out board readers get sign-in guidance instead of an unusable submit button.
+- Invalid moderation/deletion actions return actionable validation responses instead of server errors. Opposing concurrent merges now have PostgreSQL coverage.
+- Verifies Rails 7.1, 7.2, 8.0 and 8.1 on Ruby 4.0.5; enables CI on the prerelease branch. Real-host and broader release checks still apply.
+
 ## [2.0.0.pre] - 2026-09-16
 
 - Adds private/public feedback boards, moderated listings, six lifecycle statuses, customer discovery, votes, one-level comments, administrator controls and duplicate merging. Participation and merge use row locks and database uniqueness; source discussions stay readable.

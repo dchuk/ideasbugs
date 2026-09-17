@@ -6,6 +6,7 @@ AllCops:
     - "test/dummy/**/*"
     - "bin/**/*"
     - "vendor/**/*"
+    - "gemfiles/vendor/**/*"
     - "tmp/**/*"
 
 Style/Documentation:

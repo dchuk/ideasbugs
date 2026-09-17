@@ -74,7 +74,7 @@ Still required before declaring final 2.0:
 
 - Run every supported Rails/Ruby CI combination; the matrix excludes Rails 8 on Ruby 3.2.
 - Complete real-host integration, theme/accessibility and production object-storage checks.
-- Extend merge concurrency proof to two simultaneous merges, and exercise all moderation/public privacy transitions in a real host.
+- Exercise all moderation/public privacy transitions in a real host; opposing concurrent merges are now covered locally.
 - Broaden browser coverage for board management, merging, voter pagination and reply deletion. The automated narrow-width customer journey is a baseline, not a full visual audit.
 - Review large-backlog query/HTML limits, and migration duration against a realistic v1 backup before upgrading a busy host. Upgrade backfill is intended for bounded product-feedback backlogs.
 - Final translated customer-board copy remains follow-up work; existing widget/dashboard localization is retained, new customer controls currently use English.
@@ -91,3 +91,7 @@ Ruby 4.0.5 (repository pin), Rails 8.1.3.1:
 - RuboCop: **60 files, no offenses**. Widget JavaScript syntax and whitespace checks passed.
 
 The supported-version CI matrix has been updated but has not yet run remotely. Real-host integration and the additional release checks above remain open.
+
+### Compatibility follow-up
+
+On the same Ruby 4.0.5 runtime, the core suite also passes Rails 7.1.6 (187 tests / 2,529 assertions; one expected Rails-7.1 rate-limiter skip), Rails 7.2 (187 / 2,532) and Rails 8.0 (187 / 2,543). PostgreSQL coverage now includes opposing simultaneous merges (5 tests / 10 assertions). The separate Ruby-version combinations remain for CI; local Rails compatibility does not claim every Ruby combination.

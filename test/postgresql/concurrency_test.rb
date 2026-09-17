@@ -61,6 +61,21 @@ class ConcurrencyTest < ActiveSupport::TestCase
     assert_includes [0, 1], target.votes_count
   end
 
+  test 'opposing concurrent merges leave a single canonical request without a cycle' do
+    first = item
+    second = item
+    merge = lambda do |source, target|
+      Ideasbugs::Merge.call(source: source, target: target)
+    rescue ArgumentError
+      # The competing merge already made this target a merged source.
+    end
+    concurrently(-> { merge.call(first, second) }, -> { merge.call(second, first) })
+    records = [first.reload, second.reload]
+    assert_equal 1, records.count { |record| record.visibility == 'listed' }
+    merged = records.find { |record| record.visibility == 'merged' }
+    assert_equal 'listed', merged.merged_into.visibility
+  end
+
   test 'default board creation for a new tenant is race safe' do
     tenant = SecureRandom.hex(8)
     concurrently(-> { Ideasbugs::Board.default_for(tenant) }, -> { Ideasbugs::Board.default_for(tenant) })

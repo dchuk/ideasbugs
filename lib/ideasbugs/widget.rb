@@ -110,6 +110,7 @@ module Ideasbugs
           cancel: t(:cancel, 'Cancel'),
           close: t(:close, 'Close'),
           thanks: t(:thanks, 'Thanks for your feedback!'),
+          pendingReview: t(:pending_review, 'Your submission is private until a moderator reviews and lists it.'),
           errorBlank: t(:error_blank, 'Please enter a message.'),
           errorSave: t(:error_save, 'Could not send feedback. Please try again.'),
           errorTooMany: t(:error_too_many, 'Too many screenshots (max %{count}).',

@@ -12,3 +12,4 @@ test/dummy/storage/
 test/dummy/tmp/
 
 /vendor/bundle*/
+/gemfiles/vendor/

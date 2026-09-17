@@ -21,6 +21,7 @@ class WidgetSystemTest < ApplicationSystemTestCase
 
     click_button 'Send feedback'
     assert_text 'Thanks for your feedback!'
+    assert_text 'private until a moderator reviews'
 
     feedback = Ideasbugs::Feedback.last
 

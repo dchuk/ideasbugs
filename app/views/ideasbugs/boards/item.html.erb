@@ -1,6 +1,6 @@
 <%= render 'ideasbugs/shared/dashboard' %>
 <p><%= link_to @board.name, board_path(@board) %></p>
-<h1>Feature request</h1>
+<h1><%= @item.kind.humanize %></h1>
 <div class="card"><%= simple_format h(@item.message) %><p><%= @item.status.humanize %> · <%= pluralize(@item.votes_count, 'vote') %></p></div>
 <% if @item.visibility == 'merged' %>
   <p>This request was merged and is read-only. <% if @canonical %><%= link_to 'Open the combined request', board_item_path(@canonical.board, @canonical) %><% end %></p>
