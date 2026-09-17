@@ -71,7 +71,7 @@ class ConcurrencyTest < ActiveSupport::TestCase
     end
     concurrently(-> { merge.call(first, second) }, -> { merge.call(second, first) })
     records = [first.reload, second.reload]
-    assert_equal 1, records.count { |record| record.visibility == 'listed' }
+    assert_equal(1, records.count { |record| record.visibility == 'listed' })
     merged = records.find { |record| record.visibility == 'merged' }
     assert_equal 'listed', merged.merged_into.visibility
   end
